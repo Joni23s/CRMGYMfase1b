@@ -21,5 +21,8 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
 
         <!-- Mapeo de clases de entidad -->
+        <mapping class="model.Client"/>
+        <mapping class="model.Plan"/>
+        <mapping class="model.HistoricalPlan"/>
     </session-factory>
 </hibernate-configuration>
