@@ -17,6 +17,6 @@ public class ClientDTO {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private boolean isActive;
+    private String isActive;
     private String namePlan;
 }

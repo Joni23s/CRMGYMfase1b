@@ -15,7 +15,7 @@ public class HistoricalPlanDTO {
     private Long idHistorical;
     private LocalDate startDate;
     private LocalDate endDate;
-    private boolean isActive;
+    private String isActive;
     private String clientName;
     private String planName;
 }
