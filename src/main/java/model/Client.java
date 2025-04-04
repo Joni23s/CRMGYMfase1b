@@ -36,4 +36,13 @@ public class Client {
     @OneToMany(mappedBy = "client")
     private List<HistoricalPlan> historicalPlans;
 
+    public Client(int documentId, String name, String lastName, String email, String phoneNumber, boolean isActive) {
+        this.documentId = documentId;
+        this.name = name;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.isActive = isActive;
+    }
+
 }
