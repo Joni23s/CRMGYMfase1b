@@ -18,7 +18,7 @@
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
 
             <!-- Mostrar consultas SQL en consola -->
-            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.show_sql" value="false"/>
             <!-- Manejo de estructura de la base de datos -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <!-- Dialecto específico de MySQL -->
@@ -26,3 +26,4 @@
         </properties>
     </persistence-unit>
 </persistence>
+

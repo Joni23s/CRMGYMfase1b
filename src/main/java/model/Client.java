@@ -1,9 +1,7 @@
 package model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -33,7 +31,9 @@ public class Client {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    @OneToMany(mappedBy = "client")
+    @OneToMany(mappedBy = "client", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<HistoricalPlan> historicalPlans;
 
     public Client(int documentId, String name, String lastName, String email, String phoneNumber, boolean isActive) {

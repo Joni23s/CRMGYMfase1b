@@ -17,7 +17,7 @@ import java.util.List;
 
 public class BaseRepositoryImpl<T, ID> implements BaseRepository<T,ID> {
 
-    private final EntityManager entityManager = JpaUtil.getEntityManager();
+    protected final EntityManager entityManager = JpaUtil.getEntityManager();
     private final Class<T> entityClass;
 
     /**
@@ -38,8 +38,8 @@ public class BaseRepositoryImpl<T, ID> implements BaseRepository<T,ID> {
             entityManager.persist(entity);
             entityManager.getTransaction().commit();
         } catch (Exception ex) {
-            ex.printStackTrace(System.out);
             entityManager.getTransaction().rollback();
+            throw new RuntimeException("Error al guardar la entidad " + entityClass.getSimpleName(), ex);
         }
     }
 
@@ -62,18 +62,24 @@ public class BaseRepositoryImpl<T, ID> implements BaseRepository<T,ID> {
             entityManager.merge(entity);
             entityManager.getTransaction().commit();
         } catch (Exception ex) {
-            ex.printStackTrace(System.out);
             entityManager.getTransaction().rollback();
+            throw new RuntimeException("Error al actualizar la entidad " + entityClass.getSimpleName(), ex);
         }
     }
 
+
     @Override
     public void delete(ID id) {
+        try {
         T entity = findById(id);
         if (entity != null) {
             entityManager.getTransaction().begin();
             entityManager.remove(entityManager.merge(entity));
             entityManager.getTransaction().commit();
+        }
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw new RuntimeException("Error al dar de baja la entidad " + entityClass.getSimpleName(), ex);
         }
     }
 }
