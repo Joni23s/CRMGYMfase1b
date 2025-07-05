@@ -8,7 +8,7 @@ import java.util.List;
 
 public class PlanMapper {
 
-    public static PlanDTO toDTO(Plan plan) {
+    public PlanDTO toDTO(Plan plan) {
         return new PlanDTO(
                 plan.getIdPlan(),
                 plan.getNamePlan(),
@@ -19,7 +19,7 @@ public class PlanMapper {
         );
     }
 
-    public static Plan toEntity(PlanDTO planDTO, List<HistoricalPlan> historicalPlan) {
+    public Plan toEntity(PlanDTO planDTO, List<HistoricalPlan> historicalPlan) {
         return new Plan(
                 planDTO.getIdPlan(),
                 planDTO.getNamePlan(),
