@@ -7,42 +7,35 @@ import model.HistoricalPlan;
 import java.util.List;
 
 public class ClientMapper {
+
     public ClientDTO toDTO(Client client) {
-        String status = client.isActive() ? "Activo" : "Inactivo";
-        String namePlan = "Sin plan activo";
+        String planName = (client.getCurrentPlan() != null)
+                ? client.getCurrentPlan().getNamePlan()
+                : "Sin plan";
 
-        List<HistoricalPlan> history = client.getHistoricalPlans();
-        if (history != null && !history.isEmpty()) {
-            // Busca el plan activo
-            HistoricalPlan activePlan = history.stream()
-                    .filter(HistoricalPlan::isActive)
-                    .findFirst()
-                    .orElse(null);
-            if (activePlan != null) {
-                namePlan = activePlan.getPlan().getNamePlan();
-            }
-        }
-
-        return ClientDTO.builder()
-                .documentId(client.getDocumentId())
-                .name(client.getName())
-                .lastName(client.getLastName())
-                .email(client.getEmail())
-                .phoneNumber(client.getPhoneNumber())
-                .status(status)
-                .namePlan(namePlan)
-                .build();
+        return new ClientDTO(
+                client.getDocumentId(),
+                client.getName(),
+                client.getLastName(),
+                client.getEmail(),
+                client.getPhoneNumber(),
+                client.isActive() ? "Activo" : "Inactivo",
+                planName
+        );
     }
 
 
-    public Client toEntity(ClientDTO clientDTO, List<HistoricalPlan> historicalPlan) {
+    public static Client toEntity(ClientDTO dto, List<HistoricalPlan> historicalPlans) {
         return new Client(
-                clientDTO.getDocumentId(),
-                clientDTO.getName(),
-                clientDTO.getLastName(),
-                clientDTO.getEmail(),
-                clientDTO.getPhoneNumber(),
-                "activo".equalsIgnoreCase(clientDTO.getStatus()),
-                historicalPlan);
+                dto.getDocumentId(),
+                dto.getName(),
+                dto.getLastName(),
+                dto.getEmail(),
+                dto.getPhoneNumber(),
+                "Activo".equals(dto.getStatus()),
+                (historicalPlans != null && !historicalPlans.isEmpty())
+                        ? historicalPlans.getLast().getPlan()
+                        : null
+        );
     }
 }

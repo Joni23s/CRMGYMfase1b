@@ -16,6 +16,6 @@ public class ClientDTO {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private String status;
-    private String namePlan;
+    private String status; // "Activo" o "Inactivo"
+    private String namePlan; // Nombre del plan actual
 }

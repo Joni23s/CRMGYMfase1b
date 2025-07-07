@@ -15,7 +15,7 @@ public class HistoricalPlanDTO {
     private Long idHistorical;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String isActive;
-    private String clientName;
-    private String planName;
+    private String isActive; // "Activo" o "Inactivo"
+    private String clientName; // client.getName() + " " + client.getLastName()
+    private String planName; // plan.getNamePlan()
 }

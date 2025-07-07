@@ -2,6 +2,7 @@ import service.ClientService;
 import service.PlanService;
 
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 public class Main {
 
@@ -20,8 +21,20 @@ public class Main {
             option = getIntInput("Seleccioná una opción: ");
             handleOptionMenu(option);
         } while (option != 0);
+        exitMessage();
     }
 
+    //  Metodo para reutilizar sub menues
+    private static void handleSubMenu(Runnable printMenu, Consumer<Integer> handleOption, int exitOption) {
+        int subOption;
+        do {
+            printMenu.run();
+            subOption = getIntInput("Seleccioná una opción: ");
+            handleOption.accept(subOption);
+        } while (subOption != exitOption);
+    }
+
+    // 📋 Menú principal
     private static void printMenu() {
         System.out.println("""
              ╔═══════════════════════════════╗
@@ -29,29 +42,26 @@ public class Main {
              ╠═══════════════════════════════╣
              ║ 1. 📄 Clientes                ║
              ║ 2. 🔍 Planes                  ║
-             ║ 3. ➕ Historial               ║
+             ║ 3. 🕓 Historial               ║
              ║ 0. 🚪 Salir                   ║
              ╚═══════════════════════════════╝
         """);
     }
+
     private static void handleOptionMenu(int option) {
         switch (option) {
-            case 1 -> {
-                int subOption;
-                do {
-                    printMenu();
-                    subOption = getIntInput("Seleccioná una opción: ");
-                    handleOptionMenuClients(option);
-                } while (subOption != 0);
-                handleOptionMenuClients(option);
+            case 1 -> handleSubMenu(Main::printMenuClients, Main::handleOptionMenuClients, 7);
+            case 2 -> handleSubMenu(Main::printMenuPlans, Main::handleOptionMenuPlans, 6);
+            case 3 -> {
+                System.out.println("🕓 Funcionalidad de historial aún no implementada.");
+                printSeparator();
             }
-            case 2 -> clientService.listClientsbyStatus(false);
-            case 3 -> clientService.listAllClients();
-            case 0 -> exitMessage();
+            case 0 -> {} // Salida ya gestionada
             default -> System.out.println("❗ Opción inválida.");
         }
     }
 
+    // 👥 CLIENTES
     private static void printMenuClients() {
         System.out.println("""
              ╔═════════════════════════════════╗
@@ -67,29 +77,16 @@ public class Main {
              ╚═════════════════════════════════╝
         """);
     }
+
     private static void handleOptionMenuClients(int option) {
         switch (option) {
-            case 1 ->{
-                int subOption = 0;
-                do{
-                    printSubMenuList();
-                    subOption = getIntInput("Seleccioná una opción: ");
-                    handleOptionSubMenuList(subOption);
-                } while(subOption != 4);
-            }
-            case 2 -> {
-                int subOption = 0;
-                do{
-                    printSubMenuFind();
-                    subOption = getIntInput("Seleccioná una opción: ");
-                    handleOptionSubMenuFind(subOption);
-                } while(subOption != 5);
-            }
+            case 1 -> handleSubMenu(Main::printSubMenuList, Main::handleOptionSubMenuList, 4);
+            case 2 -> handleSubMenu(Main::printSubMenuFind, Main::handleOptionSubMenuFind, 5);
             case 3 -> clientService.addClient();
             case 4 -> clientService.updateClient();
-            case 5 -> clientService.disableClient();
+            case 5 -> clientService.deactivateClient();
             case 6 -> clientService.reactivateClient();
-            case 0 -> exitMessage(); // Salida gestionada por exitMessage()
+            case 7 -> {} // Volver
             default -> System.out.println("❗ Opción inválida.");
         }
     }
@@ -100,18 +97,19 @@ public class Main {
              ║         📄 LISTAR CLIENTES          ║
              ╠═════════════════════════════════════╣
              ║ 1. 🏃‍♂️   Clientes activos            ║
-             ║ 2. 🧍‍♂️   Clientes inactivos           ║
-             ║ 3. 🧍🏃‍ Todos los Clientes           ║
+             ║ 2. 🧍‍♂️   Clientes inactivos          ║
+             ║ 3. 🧍🏃‍ Todos los Clientes          ║
              ║ 4. ↩️   Regresar al Menú anterior   ║
              ╚═════════════════════════════════════╝
         """);
     }
+
     private static void handleOptionSubMenuList(int option) {
         switch (option) {
-            case 1 -> clientService.listClientsbyStatus(true);
-            case 2 -> clientService.listClientsbyStatus(false);
+            case 1 -> clientService.listClientsByStatus(true);
+            case 2 -> clientService.listClientsByStatus(false);
             case 3 -> clientService.listAllClients();
-            case 4 -> go();
+            case 4 -> {} // Volver
             default -> System.out.println("❗ Opción inválida.");
         }
     }
@@ -121,7 +119,7 @@ public class Main {
              ╔═════════════════════════════════════╗
              ║         📄 BUSCAR CLIENTES          ║
              ╠═════════════════════════════════════╣
-             ║ 1. 🪪   Por DNI                      ║
+             ║ 1. 🪪   Por DNI                     ║
              ║ 2. 🧑   Por nombre                  ║
              ║ 3. 👴️   Por apellido                ║
              ║ 4. 📨   Por mail                    ║
@@ -129,46 +127,42 @@ public class Main {
              ╚═════════════════════════════════════╝
         """);
     }
+
     private static void handleOptionSubMenuFind(int option) {
         switch (option) {
             case 1 -> clientService.findClientById();
             case 2 -> clientService.findClientByName();
             case 3 -> clientService.findClientByLastName();
             case 4 -> clientService.findClientByEmail();
-            case 5 -> go();
+            case 5 -> {} // Volver
             default -> System.out.println("❗ Opción inválida.");
         }
     }
 
+    // 📦 PLANES
     private static void printMenuPlans() {
         System.out.println("""
              ╔══════════════════════════════════╗
              ║        📋 MENÚ DE PLANES         ║
              ╠══════════════════════════════════╣
              ║ 1. 📄 Listar Planes              ║
-             ║ 2. 🔍 Modificar Plan             ║
+             ║ 2. ✏️ Modificar Plan             ║
              ║ 3. ➕ Crear Plan                 ║
-             ║ 4. Dar de baja un Plan           ║
-             ║ 5. ↩️ Regresar al Menú anterior  ║
+             ║ 4. ❌ Dar de baja un Plan        ║
+             ║ 5. ✅ Reactivar un Plan          ║
+             ║ 6. ↩️ Regresar al Menú anterior  ║
              ╚══════════════════════════════════╝
         """);
     }
 
     private static void handleOptionMenuPlans(int option) {
         switch (option) {
-
-            case 1 -> {
-                int subOption = 0;
-                do{
-                    printSubMenuListPlans();
-                    subOption = getIntInput("Seleccioná una opción: ");
-                    handleOptionSubMenuListPlans(subOption);
-                } while(subOption != 4);
-            }
-            case 2 -> clientService.findClientByName();
-            case 3 -> clientService.findClientByLastName();
-            case 4 -> clientService.findClientByEmail();
-            case 5 -> go();
+            case 1 -> handleSubMenu(Main::printSubMenuListPlans, Main::handleOptionSubMenuListPlans, 4);
+            case 2 -> planService.updatePlan();
+            case 3 -> planService.addPlan();
+            case 4 -> planService.disablePlan();
+            case 5 -> planService.reactivatePlan();
+            case 6 -> {} // Volver
             default -> System.out.println("❗ Opción inválida.");
         }
     }
@@ -188,20 +182,15 @@ public class Main {
 
     private static void handleOptionSubMenuListPlans(int option) {
         switch (option) {
-
             case 1 -> planService.listPlansbyStatus(true);
             case 2 -> planService.listPlansbyStatus(false);
             case 3 -> planService.listAllPlans();
-            case 4 -> {
-                int subOption = 0;
-                printMenuPlans();
-                subOption = getIntInput("Seleccioná una opción: ");
-                handleOptionMenuPlans(subOption);
-            }
+            case 4 -> {} // Volver
             default -> System.out.println("❗ Opción inválida.");
         }
     }
 
+    // 🧩 Utilidades
     private static int getIntInput(String message) {
         System.out.print(message);
         while (!scanner.hasNextInt()) {
@@ -209,7 +198,7 @@ public class Main {
             scanner.next();
         }
         int input = scanner.nextInt();
-        scanner.nextLine(); // limpia el \n que queda en el buffer
+        scanner.nextLine(); // Limpia el buffer
         return input;
     }
 
@@ -220,5 +209,10 @@ public class Main {
                     ══════════════════════════════════
                 """
         );
+    }
+
+    private static void printSeparator() {
+        System.out.println();
+        System.out.println("═════════════════════════════════════════════════════════");
     }
 }

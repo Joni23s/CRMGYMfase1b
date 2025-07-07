@@ -12,20 +12,21 @@ public class HistoricalPlanMapper {
                 historicalPlan.getIdHistorical(),
                 historicalPlan.getStartDate(),
                 historicalPlan.getEndDate(),
-                historicalPlan.isActive()  ? "Activo" : "Inactivo",
+                historicalPlan.isActive() ? "Activo" : "Inactivo",
                 historicalPlan.getClient().getName() + " " + historicalPlan.getClient().getLastName(),
                 historicalPlan.getPlan().getNamePlan()
         );
     }
 
-    public static HistoricalPlan toEntity(HistoricalPlanDTO historicalPlanDTO, Client client, Plan plan) {
+    public static HistoricalPlan toEntity(HistoricalPlanDTO dto, Client client, Plan plan) {
         return new HistoricalPlan(
-                historicalPlanDTO.getIdHistorical(),
-                historicalPlanDTO.getStartDate(),
-                historicalPlanDTO.getEndDate(),
-                "Activo".equals(historicalPlanDTO.getIsActive()),
+                dto.getIdHistorical(),
+                dto.getStartDate(),
+                dto.getEndDate(),
+                "Activo".equalsIgnoreCase(dto.getIsActive()),
                 client,
                 plan
         );
     }
+
 }

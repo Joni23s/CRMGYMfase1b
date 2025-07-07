@@ -19,4 +19,5 @@ public class PlanDTO {
     private int hoursEnabled;
     private BigDecimal value;
     private String notes;
+    private String status; // "Activo" o "Inactivo"
 }

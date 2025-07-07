@@ -28,11 +28,11 @@ public class HistoricalPlan {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "document_id", nullable = false)
     private Client client;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_plan", nullable = false)
     private Plan plan;
 

@@ -1,9 +1,7 @@
 package model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,6 +32,22 @@ public class Plan {
     @Column(name = "notes")
     private String notes;
 
-    @OneToMany(mappedBy = "plan")
+    @Column(name = "status")
+    private boolean isActive;
+
+    @OneToMany(mappedBy = "plan", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<HistoricalPlan> historicalPlans;
+
+    // Constructor manual útil para inicializar sin lista de historial
+    public Plan(int idPlan, String namePlan, int daysEnabled, int hoursEnabled, BigDecimal value, String notes, boolean isActive) {
+        this.idPlan = idPlan;
+        this.namePlan = namePlan;
+        this.daysEnabled = daysEnabled;
+        this.hoursEnabled = hoursEnabled;
+        this.value = value;
+        this.notes = notes;
+        this.isActive = isActive;
+    }
 }

@@ -31,18 +31,24 @@ public class Client {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_plan_id")
+    private Plan currentPlan;
+
     @OneToMany(mappedBy = "client", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<HistoricalPlan> historicalPlans;
 
-    public Client(int documentId, String name, String lastName, String email, String phoneNumber, boolean isActive) {
+    // Constructor útil para crear clientes sin historial, pero con plan
+    public Client(int documentId, String name, String lastName, String email, String phoneNumber, boolean isActive, Plan currentPlan) {
         this.documentId = documentId;
         this.name = name;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.isActive = isActive;
+        this.currentPlan = currentPlan;
     }
 
 }

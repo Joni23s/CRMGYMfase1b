@@ -17,30 +17,33 @@ public class ClientRepositoryImpl extends BaseRepositoryImpl<Client, Integer> im
         if (client != null) {
             client.setActive(false);
             update(client);
+        } else {
+            System.out.println("⚠️ No se encontró el cliente con ID: " + id + " para darlo de baja.");
         }
     }
 
     @Override
     public Optional<Client> findByEmail(String email) {
         return entityManager.createQuery(
-                        "SELECT c FROM Client c WHERE c.email = :email", Client.class)
+                        "SELECT c FROM Client c WHERE LOWER(c.email) LIKE LOWER(CONCAT('%', :email, '%'))", Client.class)
                 .setParameter("email", email)
                 .getResultStream()
-                .findFirst();
+                .findFirst(); // sigue siendo solo uno
     }
 
     @Override
     public List<Client> findByName(String name) {
         return entityManager.createQuery(
-                        "SELECT c FROM Client c WHERE c.name = :name", Client.class)
+                        "SELECT c FROM Client c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))", Client.class)
                 .setParameter("name", name)
                 .getResultList();
     }
 
+
     @Override
     public List<Client> findByLastName(String lastName) {
         return entityManager.createQuery(
-                        "SELECT c FROM Client c WHERE c.lastName = :lastName", Client.class)
+                        "SELECT c FROM Client c WHERE LOWER(c.lastName) LIKE LOWER(CONCAT('%', :lastName, '%'))", Client.class)
                 .setParameter("lastName", lastName)
                 .getResultList();
     }

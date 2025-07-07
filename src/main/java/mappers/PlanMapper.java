@@ -15,19 +15,20 @@ public class PlanMapper {
                 plan.getDaysEnabled(),
                 plan.getHoursEnabled(),
                 plan.getValue(),
-                plan.getNotes()
+                plan.getNotes(),
+                (plan.isActive() ? "Activo" : "Inactivo")
         );
     }
 
-    public Plan toEntity(PlanDTO planDTO, List<HistoricalPlan> historicalPlan) {
+    public static Plan toEntity(PlanDTO dto) {
         return new Plan(
-                planDTO.getIdPlan(),
-                planDTO.getNamePlan(),
-                planDTO.getDaysEnabled(),
-                planDTO.getHoursEnabled(),
-                planDTO.getValue(),
-                planDTO.getNotes(),
-                historicalPlan
+                dto.getIdPlan(),
+                dto.getNamePlan(),
+                dto.getDaysEnabled(),
+                dto.getHoursEnabled(),
+                dto.getValue(),
+                dto.getNotes(),
+                "Activo".equalsIgnoreCase(dto.getStatus())
         );
     }
 }
