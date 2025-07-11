@@ -1,12 +1,16 @@
 package service;
 
+import dto.ClientDTO;
 import mappers.ClientMapper;
 import model.Client;
-import repository.ClientRepository;
-import repository.ClientRepositoryImpl;
+import model.HistoricalPlan;
+import model.Plan;
+import repository.*;
 import validations.ClientValidation;
 import validations.GeneralValidation;
+import util.TablePrinterUtil;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,72 +20,42 @@ public class ClientService {
     private final ClientValidation clientValidation = new ClientValidation();
     private final ClientMapper clientMapper = new ClientMapper();
     private final GeneralValidation generalValidation = new GeneralValidation();
+    private final PlanRepository planRepository = new PlanRepositoryImpl();
+    private final HistoricalPlanRepository historicalPlanRepository = new HistoricalPlanRepositoryImpl();
 
     public void listClientsByStatus(boolean status) {
-        System.out.printf("""
-                ══════════════════════════════════
-                  📋 Listado de Clientes %s
-                ══════════════════════════════════
-                %n
-            """, status ? "Activos" : "Inactivos"
-        );
-        clientRepository.findByIsActive(status)
-                .stream()
-                .map(clientMapper::toDTO)
-                .forEach(System.out::println);
-        printSeparator();
+        List<Client> list = clientRepository.findByIsActive(status);
+        printClients(list, "Clientes " + (status ? "Activos" : "Inactivos"));
     }
 
     public void listAllClients() {
-        System.out.println("""
-                ════════════════════════════════════
-                  📋 Listado de Todos los Clientes
-                ════════════════════════════════════
-            """
-        );
-        clientRepository.findAll()
-                .stream()
-                .map(clientMapper::toDTO)
-                .forEach(System.out::println);
-        printSeparator();
+        List<Client> list = clientRepository.findAll();
+        printClients(list, "de Todos los Clientes");
     }
 
     public void findClientById() {
         int documentId = generalValidation.getIntInput("🔍 Ingrese el DNI del Cliente: ");
         Client client = clientRepository.findById(documentId);
 
-        System.out.println(client != null ? "\n" + clientMapper.toDTO(client) : "\n❌ No hay cliente con ID: " + documentId);
+        if (client != null) {
+            TablePrinterUtil.printClientRow(clientMapper.toDTO(client));
+        } else {
+            System.out.println("\n❌ No hay cliente con ID: " + documentId);
+        }
+
         printSeparator();
     }
 
     public void findClientByName() {
         String name = generalValidation.getStringInput("🔍 Ingrese el Nombre del Cliente: ");
-        List<Client> clients = clientRepository.findByName(name);
-
-        if (!clients.isEmpty()) {
-            System.out.println("\n✅ Clientes encontrados:");
-            clients.stream()
-                    .map(clientMapper::toDTO)
-                    .forEach(System.out::println);
-        } else {
-            System.out.println("\n❌ No hay clientes con Nombre: " + name);
-        }
-        printSeparator();
+        List<Client> list = clientRepository.findByName(name);
+        printClients(list, "con nombre: " + name);
     }
 
     public void findClientByLastName() {
         String lastName = generalValidation.getStringInput("🔍 Ingrese el Apellido del Cliente: ");
-        List<Client> clients = clientRepository.findByLastName(lastName);
-
-        if (!clients.isEmpty()) {
-            System.out.println("\n✅ Clientes encontrados:");
-            clients.stream()
-                    .map(clientMapper::toDTO)
-                    .forEach(System.out::println);
-        } else {
-            System.out.println("\n❌ No hay clientes con Apellido: " + lastName);
-        }
-        printSeparator();
+        List<Client> list = clientRepository.findByLastName(lastName);
+        printClients(list, "con apellido: " + lastName);
     }
 
     public void findClientByEmail() {
@@ -91,20 +65,20 @@ public class ClientService {
         client.ifPresentOrElse(
                 c -> {
                     System.out.println("\n✅ Cliente encontrado:");
-                    System.out.println(clientMapper.toDTO(c));
+                    TablePrinterUtil.printClientRow(clientMapper.toDTO(c));
                 },
                 () -> System.out.println("\n❌ No hay clientes con el Email: " + email)
         );
+
         printSeparator();
     }
 
     public void addClient() {
         System.out.println("""
-                ══════════════════════════════════
-                    ➕ Agregar un nuevo Cliente
-                ══════════════════════════════════
-            """
-        );
+                    ══════════════════════════════════
+                        ➕ Agregar un nuevo Cliente
+                    ══════════════════════════════════
+                """);
 
         int documentId = clientValidation.isDocumentIdDuplicated("DNI: ");
         String name = generalValidation.getStringInput("Nombre: ");
@@ -113,23 +87,30 @@ public class ClientService {
         String phoneNumber = generalValidation.getStringInput("Celular: ");
         boolean isActive = true;
 
-        Client client = new Client(
-                documentId, name, lastName, email, phoneNumber,
-                isActive, null
-        );
+        int planId = generalValidation.getIntInput("Id del plan que se asignará al cliente: ");
+        Plan plan = planRepository.findById(planId);
 
+        if (plan == null || !plan.isActive()) {
+            System.out.println("❌ El plan no existe o está inactivo.");
+            return;
+        }
+
+        Client client = new Client(documentId, name, lastName, email, phoneNumber, isActive, plan);
         clientRepository.save(client);
-        System.out.println("✅ Cliente agregado con éxito: \n" + clientMapper.toDTO(clientRepository.findById(documentId)));
+
+        createHistoricalPlan(client, plan);
+
+        System.out.println("✅ Cliente agregado con éxito:");
+        TablePrinterUtil.printClientRow(clientMapper.toDTO(client));
         printSeparator();
     }
 
     public void updateClient() {
         System.out.println("""
-                ══════════════════════════════════
-                     ✏️ Modificar un Cliente
-                ══════════════════════════════════
-            """
-        );
+                    ══════════════════════════════════
+                         ✏️ Modificar un Cliente
+                    ══════════════════════════════════
+                """);
 
         int documentId = generalValidation.getIntInput("DNI del Cliente a modificar: ");
         Client client = clientRepository.findById(documentId);
@@ -148,18 +129,38 @@ public class ClientService {
         client.setPhoneNumber(generalValidation.getStringInput("Celular: ", client.getPhoneNumber()));
         client.setActive(generalValidation.getStateInput("Estado (activo/inactivo): ", client.isActive()));
 
+        int planId = generalValidation.getIntInput("Id del nuevo Plan: ");
+        Plan plan = planRepository.findById(planId);
+
+        if (plan == null || !plan.isActive()) {
+            System.out.println("❌ El plan no existe o está inactivo.");
+            return;
+        }
+
+        List<HistoricalPlan> historial = client.getHistoricalPlans();
+        if (!historial.isEmpty()) {
+            HistoricalPlan anterior = historial.getLast();
+            anterior.setEndDate(LocalDate.now());
+            anterior.setActive(false);
+            historicalPlanRepository.update(anterior);
+        }
+
+        client.setCurrentPlan(plan);
         clientRepository.update(client);
-        System.out.println("✅ Cliente actualizado: \n" + clientMapper.toDTO(client));
+
+        createHistoricalPlan(client, plan);
+
+        System.out.println("✅ Cliente actualizado:");
+        TablePrinterUtil.printClientRow(clientMapper.toDTO(client));
         printSeparator();
     }
 
     public void deactivateClient() {
         System.out.println("""
-                ══════════════════════════════════
-                   ❌ Dar de baja a un Cliente
-                ══════════════════════════════════
-            """
-        );
+                    ══════════════════════════════════
+                       ❌ Dar de baja a un Cliente
+                    ══════════════════════════════════
+                """);
 
         int documentId = generalValidation.getIntInput("Ingrese el DNI del Cliente a dar de baja: ");
         Client client = clientRepository.findById(documentId);
@@ -168,18 +169,26 @@ public class ClientService {
             System.out.println("❌ No se encontró registro de Cliente con DNI: " + documentId);
         } else {
             clientRepository.logicalDelete(documentId);
-            System.out.println("✅ Cliente dado de baja (inactivado): \n" + clientMapper.toDTO(client));
+
+            List<HistoricalPlan> historial = client.getHistoricalPlans();
+            if (!historial.isEmpty()) {
+                HistoricalPlan actual = historial.getLast();
+                historicalPlanRepository.logicalDelete(actual.getIdHistorical());
+            }
+
+            System.out.println("✅ Cliente dado de baja:");
+            TablePrinterUtil.printClientRow(clientMapper.toDTO(client));
         }
+
         printSeparator();
     }
 
     public void reactivateClient() {
         System.out.println("""
-                ══════════════════════════════════
-                     ✅ Reactivar Cliente
-                ══════════════════════════════════
-            """
-        );
+                    ══════════════════════════════════
+                         ✅ Reactivar Cliente
+                    ══════════════════════════════════
+                """);
 
         int documentId = generalValidation.getIntInput("Ingrese el DNI del Cliente a reactivar: ");
         Client client = clientRepository.findById(documentId);
@@ -193,9 +202,41 @@ public class ClientService {
             }
             client.setActive(true);
             clientRepository.update(client);
-            System.out.println("✅ Cliente reactivado: \n" + clientMapper.toDTO(client));
+            System.out.println("✅ Cliente reactivado:");
+            TablePrinterUtil.printClientRow(clientMapper.toDTO(client));
+        }
+
+        printSeparator();
+    }
+
+    // 🧩 Utilidad común para imprimir listas
+    private void printClients(List<Client> list, String header) {
+        if (list.isEmpty()) {
+            System.out.println("❌ No hay clientes " + header.toLowerCase() + ".");
+        } else {
+            System.out.printf("""
+                ════════════════════════════════════
+                  📋 Listado de %s
+                ════════════════════════════════════
+                %n""", header);
+
+            List<ClientDTO> dtoList = list.stream()
+                    .map(clientMapper::toDTO)
+                    .toList();
+
+            TablePrinterUtil.printClientsTable(dtoList);
         }
         printSeparator();
+    }
+
+    private void createHistoricalPlan(Client client, Plan plan) {
+        HistoricalPlan historical = new HistoricalPlan();
+        historical.setStartDate(LocalDate.now());
+        historical.setEndDate(null);
+        historical.setActive(true);
+        historical.setClient(client);
+        historical.setPlan(plan);
+        historicalPlanRepository.save(historical);
     }
 
     private void printSeparator() {
@@ -203,4 +244,3 @@ public class ClientService {
         System.out.println("═════════════════════════════════════════════════════════");
     }
 }
-

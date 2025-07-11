@@ -7,7 +7,7 @@ import model.Plan;
 
 public class HistoricalPlanMapper {
 
-    public static HistoricalPlanDTO toDTO(HistoricalPlan historicalPlan) {
+    public HistoricalPlanDTO toDTO(HistoricalPlan historicalPlan) {
         return new HistoricalPlanDTO(
                 historicalPlan.getIdHistorical(),
                 historicalPlan.getStartDate(),
@@ -19,14 +19,15 @@ public class HistoricalPlanMapper {
     }
 
     public static HistoricalPlan toEntity(HistoricalPlanDTO dto, Client client, Plan plan) {
-        return new HistoricalPlan(
-                dto.getIdHistorical(),
-                dto.getStartDate(),
-                dto.getEndDate(),
-                "Activo".equalsIgnoreCase(dto.getIsActive()),
-                client,
-                plan
-        );
+        return HistoricalPlan.builder()
+                .idHistorical(dto.getIdHistorical())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .isActive("Activo".equalsIgnoreCase(dto.getIsActive()))
+                .client(client)
+                .plan(plan)
+                .build();
     }
+
 
 }

@@ -1,12 +1,11 @@
 package controller;
 
-import java.util.Scanner;
 import static util.MenuUtils.getIntInput;
 
 public class AppController {
-    private static final Scanner scanner = new Scanner(System.in);
     private final ClientMenuController clientMenu = new ClientMenuController();
     private final PlanMenuController planMenu = new PlanMenuController();
+    private final HistoricalMenuController historicalMenu = new HistoricalMenuController();
 
     public void start() {
         int option;
@@ -21,7 +20,7 @@ public class AppController {
     private void printMainMenu() {
         System.out.println("""
              ╔═══════════════════════════════╗
-             ║           📋 MENÚ             ║
+             ║ 🏋️‍♀️ CRM GYM App 🏋️‍♂️(Fase 1-b)  ║
              ╠═══════════════════════════════╣
              ║ 1. 📄 Clientes                ║
              ║ 2. 🔍 Planes                  ║
@@ -35,8 +34,8 @@ public class AppController {
         switch (option) {
             case 1 -> clientMenu.start();
             case 2 -> planMenu.start();
-            case 3 -> System.out.println("🚧 Módulo Historial aún no implementado");
-            case 0 -> {}
+            case 3 -> historicalMenu.start();
+            case 0 -> System.out.println("🔚 Saliendo del sistema...");
             default -> System.out.println("❗ Opción inválida.");
         }
     }
@@ -48,6 +47,4 @@ public class AppController {
             ══════════════════════════════════
         """);
     }
-
-
 }

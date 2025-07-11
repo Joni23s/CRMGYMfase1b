@@ -7,8 +7,10 @@ import repository.PlanRepository;
 import repository.PlanRepositoryImpl;
 import validations.GeneralValidation;
 import validations.PlanValidation;
+import util.TablePrinterUtil;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class PlanService {
 
@@ -17,33 +19,14 @@ public class PlanService {
     private final PlanValidation planValidation = new PlanValidation();
     private final PlanMapper planMapper = new PlanMapper();
 
-    public void listPlansbyStatus(boolean status) {
-        System.out.printf("""
-                ══════════════════════════════════
-                  📋 Listado de Planes %s
-                ══════════════════════════════════
-                %n
-            """, status ? "Activos" : "Inactivos"
-        );
-        planRepository.findByIsActive(status)
-                .stream()
-                .map(planMapper::toDTO)
-                .forEach(System.out::println);
-        printSeparator();
+    public void listPlansByStatus(boolean status) {
+        List<Plan> list = planRepository.findByIsActive(status);
+        printPlans(list, "Planes " + (status ? "Activos" : "Inactivos"));
     }
 
     public void listAllPlans() {
-        System.out.println("""
-                ════════════════════════════════════
-                  📋 Listado de Todos los Planes
-                ════════════════════════════════════
-            """
-        );
-        planRepository.findAll()
-                .stream()
-                .map(planMapper::toDTO)
-                .forEach(System.out::println);
-        printSeparator();
+        List<Plan> list = planRepository.findAll();
+        printPlans(list, "de Todos los Planes");
     }
 
     public void updatePlan() {
@@ -51,8 +34,7 @@ public class PlanService {
                 ══════════════════════════════════
                      ✏️ Modificar un Plan
                 ══════════════════════════════════
-            """
-        );
+            """);
 
         int id = generalValidation.getIntInput("Id del Plan a modificar: ");
         Plan plan = planRepository.findById(id);
@@ -73,7 +55,9 @@ public class PlanService {
         plan.setActive(generalValidation.getStateInput("Estado (activo/inactivo): ", plan.isActive()));
 
         planRepository.update(plan);
-        System.out.println("✅ Plan actualizado: \n" + planMapper.toDTO(plan));
+
+        System.out.println("✅ Plan actualizado:");
+        TablePrinterUtil.printPlanRow(planMapper.toDTO(plan));
         printSeparator();
     }
 
@@ -82,8 +66,7 @@ public class PlanService {
                 ══════════════════════════════════
                     ➕ Agregar un nuevo Plan
                 ══════════════════════════════════
-            """
-        );
+            """);
 
         int id = generalValidation.getIntInput("Id del nuevo Plan: ");
         String namePlan = generalValidation.getStringInput("Nombre del Plan: ");
@@ -96,7 +79,9 @@ public class PlanService {
         Plan plan = new Plan(id, namePlan, daysEnabled, hoursEnabled, value, notes, isActive);
 
         planRepository.save(plan);
-        System.out.println("✅ Plan agregado con éxito: \n" + planMapper.toDTO(planRepository.findById(id)));
+
+        System.out.println("✅ Plan agregado con éxito:");
+        TablePrinterUtil.printPlanRow(planMapper.toDTO(plan));
         printSeparator();
     }
 
@@ -105,8 +90,7 @@ public class PlanService {
                 ══════════════════════════════════
                    ❌ Dar de baja a un Plan
                 ══════════════════════════════════
-            """
-        );
+            """);
 
         int id = generalValidation.getIntInput("Ingrese el Id del Plan a dar de baja: ");
         Plan plan = planRepository.findById(id);
@@ -115,8 +99,10 @@ public class PlanService {
             System.out.println("❌ No se encontró registro de un Plan con Id " + id);
         } else {
             planRepository.logicalDelete(id);
-            System.out.println("✅ Plan dado de baja (inactivado): \n" + planMapper.toDTO(plan));
+            System.out.println("✅ Plan dado de baja:");
+            TablePrinterUtil.printPlanRow(planMapper.toDTO(plan));
         }
+
         printSeparator();
     }
 
@@ -125,8 +111,7 @@ public class PlanService {
                 ══════════════════════════════════
                      ✅ Reactivar Plan
                 ══════════════════════════════════
-            """
-        );
+            """);
 
         int id = generalValidation.getIntInput("Ingrese el Id del Plan a reactivar: ");
         Plan plan = planRepository.findById(id);
@@ -140,7 +125,29 @@ public class PlanService {
             }
             plan.setActive(true);
             planRepository.update(plan);
-            System.out.println("✅ Plan reactivado: \n" + planMapper.toDTO(plan));
+            System.out.println("✅ Plan reactivado:");
+            TablePrinterUtil.printPlanRow(planMapper.toDTO(plan));
+        }
+
+        printSeparator();
+    }
+
+    // 🧩 Método común para impresión de listas
+    private void printPlans(List<Plan> list, String header) {
+        if (list.isEmpty()) {
+            System.out.println("❌ No hay planes " + header.toLowerCase() + ".");
+        } else {
+            System.out.printf("""
+                ════════════════════════════════════
+                  📋 Listado de %s
+                ════════════════════════════════════
+                %n""", header);
+
+            List<PlanDTO> dtoList = list.stream()
+                    .map(planMapper::toDTO)
+                    .toList();
+
+            TablePrinterUtil.printPlansTable(dtoList);
         }
         printSeparator();
     }

@@ -2,13 +2,10 @@ package controller;
 
 import service.PlanService;
 
-import java.util.Scanner;
 import static util.MenuUtils.getIntInput;
 import static util.MenuUtils.handleSubMenu;
 
 public class PlanMenuController {
-
-    private static final Scanner scanner = new Scanner(System.in);
     private static final PlanService planService = new PlanService();
 
     public void start() {
@@ -38,7 +35,7 @@ public class PlanMenuController {
 
     private static void handleOptionMenuPlans(int option) {
         switch (option) {
-            case 1 -> handleSubMenu(PlanMenuController::printSubMenuListPlans, PlanMenuController::handleOptionSubMenuListPlans, 6);
+            case 1 -> handleSubMenu(PlanMenuController::printSubMenuListPlans, PlanMenuController::handleOptionSubMenuListPlans, 4);
             case 2 -> planService.updatePlan();
             case 3 -> planService.addPlan();
             case 4 -> planService.disablePlan();
@@ -63,8 +60,8 @@ public class PlanMenuController {
 
     private static void handleOptionSubMenuListPlans(int option) {
         switch (option) {
-            case 1 -> planService.listPlansbyStatus(true);
-            case 2 -> planService.listPlansbyStatus(false);
+            case 1 -> planService.listPlansByStatus(true);
+            case 2 -> planService.listPlansByStatus(false);
             case 3 -> planService.listAllPlans();
             case 4 -> {} // Volver
             default -> System.out.println("❗ Opción inválida.");

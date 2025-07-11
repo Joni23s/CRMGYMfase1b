@@ -2,12 +2,10 @@ package controller;
 
 import service.ClientService;
 
-import java.util.Scanner;
 import static util.MenuUtils.getIntInput;
 import static util.MenuUtils.handleSubMenu;
 
 public class ClientMenuController {
-    private static final Scanner scanner = new Scanner(System.in);
     private static final ClientService clientService = new ClientService();
 
     public void start() {
@@ -19,7 +17,6 @@ public class ClientMenuController {
         } while (option != 7);
     }
 
-    // 👥 CLIENTES
     private static void printMenuClients() {
         System.out.println("""
              ╔═════════════════════════════════╗

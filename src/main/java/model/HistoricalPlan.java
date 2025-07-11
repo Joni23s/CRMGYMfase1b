@@ -1,15 +1,14 @@
 package model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "historical_plans")
 public class HistoricalPlan {
@@ -28,12 +27,15 @@ public class HistoricalPlan {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "document_id", nullable = false)
     private Client client;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_plan", nullable = false)
     private Plan plan;
+
 
 }
