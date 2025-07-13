@@ -12,6 +12,8 @@ public class ClientValidation {
     private final GeneralValidation generalValidation = new GeneralValidation();
     private final Scanner console = new Scanner(System.in);
     private final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private final Pattern PHONE_PATTERN = Pattern.compile("^\\+?\\d{7,15}$");
+    private final Pattern NAME_PATTERN = Pattern.compile("^[A-Z][a-z]+$");
 
     public int isDocumentIdDuplicated(String message) {
         while (true) {
@@ -55,6 +57,7 @@ public class ClientValidation {
         }while (true);
     }
 
+
     public String getEmailInput(String message, String currentValue) {
         String input;
 
@@ -73,5 +76,79 @@ public class ClientValidation {
             }
 
         }while (true);
+    }
+
+    public String getNameInput(String message) {
+        String input;
+
+        do {
+            System.out.print(message);
+            input = console.nextLine();
+
+            if (NAME_PATTERN.matcher(input).matches()) {
+                return input.toLowerCase();
+            } else {
+                System.out.println("Error: el formato del nombre y/o apellido no es válido");
+            }
+
+        }while (true);
+    }
+
+    public String getNameInput(String message, String currentValue) {
+        String input;
+
+        do {
+            System.out.print(message);
+            input = console.nextLine();
+
+            if (input.equals("-")){
+                return currentValue;
+            }
+
+            if (NAME_PATTERN.matcher(input).matches()) {
+                return input.toLowerCase();
+            } else {
+                System.out.println("Error: el formato del nombre y/o apellido no es válido");
+            }
+
+        }while (true);
+    }
+
+    public String getPhoneInput(String message) {
+        String input;
+
+        do {
+            System.out.print(message);
+            input = console.nextLine().trim();
+
+            if (PHONE_PATTERN.matcher(input).matches()) {
+                return input;
+            } else {
+                System.out.println("❌ Error: el número de teléfono no es válido.");
+                System.out.println("📌 Debe tener entre 7 y 15 dígitos, y puede comenzar con '+'.");
+            }
+
+        } while (true);
+    }
+
+    public String getPhoneInput(String message, String currentValue) {
+        String input;
+
+        do {
+            System.out.print(message);
+            input = console.nextLine().trim();
+
+            if (input.equals("-")){
+                return currentValue;
+            }
+
+            if (PHONE_PATTERN.matcher(input).matches()) {
+                return input;
+            } else {
+                System.out.println("❌ Error: el número de teléfono no es válido.");
+                System.out.println("📌 Debe tener entre 7 y 15 dígitos, y puede comenzar con '+'.");
+            }
+
+        } while (true);
     }
 }

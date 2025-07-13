@@ -75,29 +75,34 @@ public class ClientService {
 
     public void addClient() {
         System.out.println("""
-                    ══════════════════════════════════
-                        ➕ Agregar un nuevo Cliente
-                    ══════════════════════════════════
-                """);
+                ══════════════════════════════════
+                    ➕ Agregar un nuevo Cliente
+                ══════════════════════════════════
+            """);
 
         int documentId = clientValidation.isDocumentIdDuplicated("DNI: ");
-        String name = generalValidation.getStringInput("Nombre: ");
-        String lastName = generalValidation.getStringInput("Apellido: ");
+        String name = clientValidation.getNameInput("Nombre: ");
+        String lastName = clientValidation.getNameInput("Apellido: ");
         String email = clientValidation.getEmailInput("Email: ");
-        String phoneNumber = generalValidation.getStringInput("Celular: ");
+        String phoneNumber = clientValidation.getPhoneInput("Celular: ");
         boolean isActive = true;
 
-        int planId = generalValidation.getIntInput("Id del plan que se asignará al cliente: ");
-        Plan plan = planRepository.findById(planId);
+        Plan plan;
+        while (true) {
+            int planId = generalValidation.getIntInput("Id del plan que se asignará al cliente: ");
+            plan = planRepository.findById(planId);
 
-        if (plan == null || !plan.isActive()) {
-            System.out.println("❌ El plan no existe o está inactivo.");
-            return;
+            if (plan == null) {
+                System.out.println("❌ El plan no existe.");
+            } else if (!plan.isActive()) {
+                System.out.println("⚠️ El plan está inactivo. Seleccioná otro.");
+            } else {
+                break; // válido
+            }
         }
 
         Client client = new Client(documentId, name, lastName, email, phoneNumber, isActive, plan);
         clientRepository.save(client);
-
         createHistoricalPlan(client, plan);
 
         System.out.println("✅ Cliente agregado con éxito:");
@@ -105,12 +110,13 @@ public class ClientService {
         printSeparator();
     }
 
+
     public void updateClient() {
         System.out.println("""
-                    ══════════════════════════════════
-                         ✏️ Modificar un Cliente
-                    ══════════════════════════════════
-                """);
+            ══════════════════════════════════
+                 ✏️ Modificar un Cliente
+            ══════════════════════════════════
+        """);
 
         int documentId = generalValidation.getIntInput("DNI del Cliente a modificar: ");
         Client client = clientRepository.findById(documentId);
@@ -123,20 +129,29 @@ public class ClientService {
 
         System.out.println("ℹ️ Ingrese un '-' para NO modificar un campo");
 
-        client.setName(generalValidation.getStringInput("Nombre: ", client.getName()));
-        client.setLastName(generalValidation.getStringInput("Apellido: ", client.getLastName()));
+        // Validaciones de campos editables
+        client.setName(clientValidation.getNameInput("Nombre: ", client.getName()));
+        client.setLastName(clientValidation.getNameInput("Apellido: ", client.getLastName()));
         client.setEmail(clientValidation.getEmailInput("Email: ", client.getEmail()));
-        client.setPhoneNumber(generalValidation.getStringInput("Celular: ", client.getPhoneNumber()));
+        client.setPhoneNumber(clientValidation.getPhoneInput("Celular: ", client.getPhoneNumber()));
         client.setActive(generalValidation.getStateInput("Estado (activo/inactivo): ", client.isActive()));
 
-        int planId = generalValidation.getIntInput("Id del nuevo Plan: ");
-        Plan plan = planRepository.findById(planId);
+        // Validación progresiva del plan
+        Plan plan;
+        while (true) {
+            int planId = generalValidation.getIntInput("Id del nuevo Plan: ", client.getCurrentPlan().getIdPlan());
+            plan = planRepository.findById(planId);
 
-        if (plan == null || !plan.isActive()) {
-            System.out.println("❌ El plan no existe o está inactivo.");
-            return;
+            if (plan == null) {
+                System.out.println("❌ El plan no existe.");
+            } else if (!plan.isActive()) {
+                System.out.println("⚠️ El plan está inactivo. Seleccioná otro.");
+            } else {
+                break;
+            }
         }
 
+        // Cerrar historial anterior
         List<HistoricalPlan> historial = client.getHistoricalPlans();
         if (!historial.isEmpty()) {
             HistoricalPlan anterior = historial.getLast();
@@ -145,15 +160,16 @@ public class ClientService {
             historicalPlanRepository.update(anterior);
         }
 
+        // Actualizar cliente y crear nuevo historial
         client.setCurrentPlan(plan);
         clientRepository.update(client);
-
         createHistoricalPlan(client, plan);
 
         System.out.println("✅ Cliente actualizado:");
         TablePrinterUtil.printClientRow(clientMapper.toDTO(client));
         printSeparator();
     }
+
 
     public void deactivateClient() {
         System.out.println("""
@@ -209,7 +225,7 @@ public class ClientService {
         printSeparator();
     }
 
-    // 🧩 Utilidad común para imprimir listas
+    //  Utilidad común para imprimir listas
     private void printClients(List<Client> list, String header) {
         if (list.isEmpty()) {
             System.out.println("❌ No hay clientes " + header.toLowerCase() + ".");
